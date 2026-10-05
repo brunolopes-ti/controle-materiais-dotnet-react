@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ControleMateriais.Api/ControleMateriais.Api.csproj" />
+    <Project Path="src/ControleMateriais.Application/ControleMateriais.Application.csproj" />
+    <Project Path="src/ControleMateriais.Domain/ControleMateriais.Domain.csproj" />
+    <Project Path="src/ControleMateriais.Infrastructure/ControleMateriais.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ControleMateriais.Tests/ControleMateriais.Tests.csproj" />
+  </Folder>
+</Solution>
