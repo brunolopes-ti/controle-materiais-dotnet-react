@@ -22,6 +22,7 @@
     <ProjectReference Include="..\..\src\ControleMateriais.Domain\ControleMateriais.Domain.csproj" />
     <ProjectReference Include="..\..\src\ControleMateriais.Application\ControleMateriais.Application.csproj" />
     <ProjectReference Include="..\..\src\ControleMateriais.Api\ControleMateriais.Api.csproj" />
+    <ProjectReference Include="..\..\src\ControleMateriais.Infrastructure\ControleMateriais.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
