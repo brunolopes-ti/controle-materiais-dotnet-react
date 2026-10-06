@@ -35,4 +35,37 @@ public class RepositorioMovimentacaoEstoque
                 movimentacao.MaterialId == materialId)
             .ToListAsync();
     }
+
+    public async Task<IReadOnlyCollection<MovimentacaoEstoque>>
+        ListarAsync(
+            Guid? unidadeId = null,
+            Guid? materialId = null)
+    {
+        var consulta =
+            _context.MovimentacoesEstoque
+                .AsNoTracking()
+                .AsQueryable();
+
+        if (unidadeId.HasValue)
+        {
+            consulta = consulta.Where(
+                movimentacao =>
+                    movimentacao.UnidadeId == unidadeId.Value
+            );
+        }
+
+        if (materialId.HasValue)
+        {
+            consulta = consulta.Where(
+                movimentacao =>
+                    movimentacao.MaterialId == materialId.Value
+            );
+        }
+
+        return await consulta
+            .OrderByDescending(
+                movimentacao => movimentacao.DataMovimentacao
+            )
+            .ToListAsync();
+    }
 }

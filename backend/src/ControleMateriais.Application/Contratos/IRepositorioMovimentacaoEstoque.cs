@@ -11,4 +11,10 @@ public interface IRepositorioMovimentacaoEstoque
             Guid unidadeId,
             Guid materialId
         );
+
+    Task<IReadOnlyCollection<MovimentacaoEstoque>>
+        ListarAsync(
+            Guid? unidadeId = null,
+            Guid? materialId = null
+        );
 }

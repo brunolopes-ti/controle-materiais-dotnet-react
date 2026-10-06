@@ -85,6 +85,9 @@ Atualmente possui:
 - registro de entradas;
 - registro de saídas;
 - consulta de saldo;
+- histórico de movimentações;
+- filtros por unidade e material;
+- resumo de estoque;
 - contratos de persistência;
 - DTOs de entrada e saída.
 
@@ -103,7 +106,9 @@ Atualmente possui:
 - migrations;
 - RepositorioUnidade;
 - RepositorioMaterial;
-- RepositorioMovimentacaoEstoque.
+- RepositorioMovimentacaoEstoque;
+- consultas filtradas de movimentações;
+- ordenação de histórico por data.
 
 ### API
 
@@ -117,7 +122,10 @@ Atualmente possui:
 - serialização de enums como texto;
 - controllers REST;
 - tratamento global de exceções;
-- respostas HTTP adequadas para erros de negócio e recursos inexistentes.
+- respostas HTTP adequadas para erros de negócio e recursos inexistentes;
+- histórico de movimentações;
+- filtros de consulta;
+- resumo de estoque.
 
 ## API REST
 
@@ -201,6 +209,83 @@ Resposta de exemplo:
       "saldo": 7
     }
 
+### Histórico de movimentações
+
+Listar todas:
+
+    GET /api/movimentacoes
+
+Filtrar por unidade:
+
+    GET /api/movimentacoes?unidadeId=UUID_DA_UNIDADE
+
+Filtrar por material:
+
+    GET /api/movimentacoes?materialId=UUID_DO_MATERIAL
+
+Filtrar por unidade e material:
+
+    GET /api/movimentacoes?unidadeId=UUID_DA_UNIDADE&materialId=UUID_DO_MATERIAL
+
+As movimentações são retornadas da mais recente para a mais antiga.
+
+Exemplo:
+
+    [
+      {
+        "id": "UUID_DA_MOVIMENTACAO",
+        "unidadeId": "UUID_DA_UNIDADE",
+        "materialId": "UUID_DO_MATERIAL",
+        "tipo": "Saida",
+        "quantidade": 3,
+        "dataMovimentacao": "DATA_HORA"
+      },
+      {
+        "id": "UUID_DA_MOVIMENTACAO",
+        "unidadeId": "UUID_DA_UNIDADE",
+        "materialId": "UUID_DO_MATERIAL",
+        "tipo": "Entrada",
+        "quantidade": 10,
+        "dataMovimentacao": "DATA_HORA"
+      }
+    ]
+
+### Resumo de estoque
+
+Resumo geral:
+
+    GET /api/estoque/resumo
+
+Resumo filtrado por unidade:
+
+    GET /api/estoque/resumo?unidadeId=UUID_DA_UNIDADE
+
+Resumo filtrado por material:
+
+    GET /api/estoque/resumo?materialId=UUID_DO_MATERIAL
+
+Resumo filtrado por unidade e material:
+
+    GET /api/estoque/resumo?unidadeId=UUID_DA_UNIDADE&materialId=UUID_DO_MATERIAL
+
+Exemplo:
+
+    {
+      "unidadeId": "UUID_DA_UNIDADE",
+      "materialId": "UUID_DO_MATERIAL",
+      "totalMovimentacoes": 2,
+      "totalEntradas": 10,
+      "totalSaidas": 3,
+      "saldo": 7
+    }
+
+O resumo apresenta:
+
+- quantidade total de movimentações;
+- total de entradas;
+- total de saídas;
+- saldo calculado.
+
 ## Respostas HTTP
 
 A API utiliza os seguintes códigos principais:
@@ -277,6 +362,23 @@ Também existem relacionamentos entre movimentações, unidades e materiais, al�
 - unidade inativa não pode movimentar estoque;
 - material inativo não pode ser movimentado.
 
+## Consultas e relatórios
+
+O sistema atualmente permite:
+
+- consultar saldo por unidade e material;
+- listar histórico completo;
+- filtrar histórico por unidade;
+- filtrar histórico por material;
+- combinar filtros de unidade e material;
+- ordenar movimentações pelas mais recentes;
+- obter total de entradas;
+- obter total de saídas;
+- obter quantidade de movimentações;
+- calcular saldo no resumo de estoque.
+
+Os filtros são aplicados pela camada de persistência antes da materialização dos resultados.
+
 ## Configuração do banco
 
 A aplicação não mantém senha de banco de dados no repositório.
@@ -310,9 +412,9 @@ O projeto utiliza xUnit.
 
 Atualmente existem:
 
-    36 testes unitários
-    1 teste de integração com PostgreSQL
-    37 testes no total
+    39 testes executados com sucesso
+    1 teste de integração com PostgreSQL ignorado quando não configurado
+    40 testes no total
 
 Executar:
 
@@ -333,9 +435,23 @@ Depois:
 
 O teste de integração utiliza transação e rollback para não manter os dados de teste gravados após sua execução.
 
+Os testes automatizados incluem cenários de:
+
+- entidades de domínio;
+- regras de estoque;
+- casos de uso;
+- cálculo de saldo;
+- criação de unidades;
+- criação de materiais;
+- registro de movimentações;
+- persistência PostgreSQL;
+- resumo de estoque;
+- filtros de histórico;
+- ordenação de movimentações.
+
 ## Validação manual da API
 
-O fluxo principal já foi validado utilizando requisições HTTP reais contra PostgreSQL:
+O fluxo principal foi validado utilizando requisições HTTP reais contra PostgreSQL:
 
     criar unidade
         ↓
@@ -348,13 +464,22 @@ O fluxo principal já foi validado utilizando requisições HTTP reais contra Po
     registrar saída
         ↓
     consultar novo saldo
+        ↓
+    consultar histórico
+        ↓
+    aplicar filtros
+        ↓
+    consultar resumo
 
 Também foram validados:
 
 - bloqueio de saída maior que o saldo;
 - resposta HTTP 400 para operação inválida;
 - resposta HTTP 404 para recurso inexistente;
-- tratamento global de exceções.
+- tratamento global de exceções;
+- histórico ordenado por data;
+- filtros por unidade e material;
+- cálculo de entradas, saídas e saldo no resumo.
 
 ## Build
 
@@ -390,21 +515,30 @@ Concluído.
 
 Concluído.
 
+### Bloco 6 — Consultas, histórico e relatórios
+
+Concluído.
+
 Foram implementados:
 
-- controllers REST;
-- cadastro de unidades;
-- cadastro de materiais;
-- registro de entradas e saídas;
-- consulta de saldo;
-- enums em formato textual no JSON;
-- códigos HTTP adequados;
-- tratamento global de exceções;
-- validação do fluxo completo utilizando PostgreSQL real.
+- histórico de movimentações;
+- ordenação das movimentações por data;
+- filtros opcionais por unidade;
+- filtros opcionais por material;
+- combinação de filtros;
+- resumo de estoque;
+- total de movimentações;
+- total de entradas;
+- total de saídas;
+- saldo consolidado;
+- testes automatizados do histórico;
+- testes automatizados do resumo.
 
 ### Próxima etapa
 
-Bloco 6 — Consultas, histórico e relatórios.
+Bloco 7 — Usuários, autenticação e JWT.
+
+O desenvolvimento deste projeto seguirá até a conclusão do Bloco 8, quando o backend será consolidado.
 
 ## Autor
 

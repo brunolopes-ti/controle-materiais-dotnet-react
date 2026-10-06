@@ -19,7 +19,6 @@ builder.Services.AddDbContext<ControleMateriaisDbContext>(options =>
 );
 
 builder.Services.AddScoped<IRepositorioUnidade, RepositorioUnidade>();
-
 builder.Services.AddScoped<IRepositorioMaterial, RepositorioMaterial>();
 
 builder.Services.AddScoped<
@@ -31,6 +30,8 @@ builder.Services.AddScoped<ServicoUnidade>();
 builder.Services.AddScoped<ServicoMaterial>();
 builder.Services.AddScoped<ServicoMovimentacaoEstoque>();
 builder.Services.AddScoped<ServicoEstoque>();
+builder.Services.AddScoped<ServicoHistoricoMovimentacao>();
+builder.Services.AddScoped<ServicoResumoEstoque>();
 
 builder.Services
     .AddControllers()

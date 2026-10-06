@@ -9,11 +9,14 @@ namespace ControleMateriais.Api.Controllers;
 public class MovimentacoesController : ControllerBase
 {
     private readonly ServicoMovimentacaoEstoque _servicoMovimentacao;
+    private readonly ServicoHistoricoMovimentacao _servicoHistorico;
 
     public MovimentacoesController(
-        ServicoMovimentacaoEstoque servicoMovimentacao)
+        ServicoMovimentacaoEstoque servicoMovimentacao,
+        ServicoHistoricoMovimentacao servicoHistorico)
     {
         _servicoMovimentacao = servicoMovimentacao;
+        _servicoHistorico = servicoHistorico;
     }
 
     [HttpPost]
@@ -27,5 +30,21 @@ public class MovimentacoesController : ControllerBase
             StatusCodes.Status201Created,
             movimentacao
         );
+    }
+
+    [HttpGet]
+    public async Task<
+        ActionResult<IReadOnlyCollection<HistoricoMovimentacaoResponse>>>
+        Listar(
+            [FromQuery] Guid? unidadeId,
+            [FromQuery] Guid? materialId)
+    {
+        var historico =
+            await _servicoHistorico.ListarAsync(
+                unidadeId,
+                materialId
+            );
+
+        return Ok(historico);
     }
 }

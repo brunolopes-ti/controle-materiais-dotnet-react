@@ -9,11 +9,14 @@ namespace ControleMateriais.Api.Controllers;
 public class EstoqueController : ControllerBase
 {
     private readonly ServicoEstoque _servicoEstoque;
+    private readonly ServicoResumoEstoque _servicoResumoEstoque;
 
     public EstoqueController(
-        ServicoEstoque servicoEstoque)
+        ServicoEstoque servicoEstoque,
+        ServicoResumoEstoque servicoResumoEstoque)
     {
         _servicoEstoque = servicoEstoque;
+        _servicoResumoEstoque = servicoResumoEstoque;
     }
 
     [HttpGet("saldo")]
@@ -28,5 +31,19 @@ public class EstoqueController : ControllerBase
             );
 
         return Ok(saldo);
+    }
+
+    [HttpGet("resumo")]
+    public async Task<ActionResult<ResumoEstoqueResponse>> ConsultarResumo(
+        [FromQuery] Guid? unidadeId,
+        [FromQuery] Guid? materialId)
+    {
+        var resumo =
+            await _servicoResumoEstoque.GerarAsync(
+                unidadeId,
+                materialId
+            );
+
+        return Ok(resumo);
     }
 }
