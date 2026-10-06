@@ -3,6 +3,7 @@ using System;
 using ControleMateriais.Infrastructure.Persistencia;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ControleMateriais.Infrastructure.Persistencia.Migrations
 {
     [DbContext(typeof(ControleMateriaisDbContext))]
-    partial class ControleMateriaisDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261006145639_AdicionaUsuarios")]
+    partial class AdicionaUsuarios
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

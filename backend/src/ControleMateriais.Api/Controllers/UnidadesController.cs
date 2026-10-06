@@ -1,10 +1,12 @@
 using ControleMateriais.Application.DTOs;
 using ControleMateriais.Application.Servicos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ControleMateriais.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/unidades")]
 public class UnidadesController : ControllerBase
 {

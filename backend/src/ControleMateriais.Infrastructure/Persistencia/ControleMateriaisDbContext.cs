@@ -18,6 +18,8 @@ public class ControleMateriaisDbContext : DbContext
     public DbSet<MovimentacaoEstoque> MovimentacoesEstoque
         => Set<MovimentacaoEstoque>();
 
+    public DbSet<Usuario> Usuarios => Set<Usuario>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(

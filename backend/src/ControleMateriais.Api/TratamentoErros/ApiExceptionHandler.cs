@@ -12,6 +12,13 @@ public sealed class ApiExceptionHandler : IExceptionHandler
     {
         var (statusCode, title, detail) = exception switch
         {
+            UnauthorizedAccessException =>
+                (
+                    StatusCodes.Status401Unauthorized,
+                    "Não autorizado.",
+                    exception.Message
+                ),
+
             KeyNotFoundException =>
                 (
                     StatusCodes.Status404NotFound,
