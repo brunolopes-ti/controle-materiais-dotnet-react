@@ -1,4 +1,7 @@
+using System.Text.Json.Serialization;
+using ControleMateriais.Api.TratamentoErros;
 using ControleMateriais.Application.Contratos;
+using ControleMateriais.Application.Servicos;
 using ControleMateriais.Infrastructure.Persistencia;
 using ControleMateriais.Infrastructure.Persistencia.Repositorios;
 using Microsoft.EntityFrameworkCore;
@@ -24,11 +27,29 @@ builder.Services.AddScoped<
     RepositorioMovimentacaoEstoque
 >();
 
-builder.Services.AddControllers();
+builder.Services.AddScoped<ServicoUnidade>();
+builder.Services.AddScoped<ServicoMaterial>();
+builder.Services.AddScoped<ServicoMovimentacaoEstoque>();
+builder.Services.AddScoped<ServicoEstoque>();
+
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter()
+        );
+    });
 
 builder.Services.AddOpenApi();
 
+builder.Services.AddProblemDetails();
+
+builder.Services.AddExceptionHandler<ApiExceptionHandler>();
+
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {

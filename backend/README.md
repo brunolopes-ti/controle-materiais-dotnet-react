@@ -107,14 +107,129 @@ Atualmente possui:
 
 ### API
 
-Responsável pela aplicação ASP.NET Core e futura exposição dos casos de uso por endpoints HTTP.
+Expõe os casos de uso da aplicação através de endpoints HTTP.
 
 Atualmente possui:
 
 - configuração do DbContext;
 - configuração da conexão com PostgreSQL;
-- registro dos repositórios por injeção de dependência;
-- endpoint de status da aplicação.
+- injeção de dependência;
+- serialização de enums como texto;
+- controllers REST;
+- tratamento global de exceções;
+- respostas HTTP adequadas para erros de negócio e recursos inexistentes.
+
+## API REST
+
+### Status
+
+    GET /api/status
+
+Resposta:
+
+    {
+      "status": "online",
+      "aplicacao": "Controle de Materiais"
+    }
+
+### Criar unidade
+
+    POST /api/unidades
+
+Exemplo:
+
+    {
+      "nome": "Prédio Central"
+    }
+
+Resposta esperada:
+
+    HTTP 201 Created
+
+### Criar material
+
+    POST /api/materiais
+
+Exemplo:
+
+    {
+      "nome": "Álcool 70%",
+      "unidadeMedida": "Litro"
+    }
+
+Resposta esperada:
+
+    HTTP 201 Created
+
+### Registrar movimentação
+
+    POST /api/movimentacoes
+
+Entrada:
+
+    {
+      "unidadeId": "UUID_DA_UNIDADE",
+      "materialId": "UUID_DO_MATERIAL",
+      "tipo": "Entrada",
+      "quantidade": 10
+    }
+
+Saída:
+
+    {
+      "unidadeId": "UUID_DA_UNIDADE",
+      "materialId": "UUID_DO_MATERIAL",
+      "tipo": "Saida",
+      "quantidade": 3
+    }
+
+Resposta esperada:
+
+    HTTP 201 Created
+
+### Consultar saldo
+
+    GET /api/estoque/saldo?unidadeId=UUID_DA_UNIDADE&materialId=UUID_DO_MATERIAL
+
+Resposta de exemplo:
+
+    {
+      "unidadeId": "UUID_DA_UNIDADE",
+      "unidadeNome": "Prédio Central",
+      "materialId": "UUID_DO_MATERIAL",
+      "materialNome": "Álcool 70%",
+      "saldo": 7
+    }
+
+## Respostas HTTP
+
+A API utiliza os seguintes códigos principais:
+
+    200 OK
+    201 Created
+    400 Bad Request
+    404 Not Found
+    500 Internal Server Error
+
+Erros conhecidos de negócio são tratados globalmente pela API.
+
+Exemplo de tentativa de saída maior que o saldo:
+
+    {
+      "title": "Operação inválida.",
+      "status": 400,
+      "detail": "Estoque insuficiente para realizar a saída."
+    }
+
+Exemplo de recurso inexistente:
+
+    {
+      "title": "Recurso não encontrado.",
+      "status": 404,
+      "detail": "Unidade não encontrada."
+    }
+
+Erros inesperados retornam uma mensagem genérica, sem exposição de detalhes internos ou stack trace ao cliente.
 
 ## Persistência
 
@@ -141,7 +256,7 @@ Cada movimentação registra:
 Os tipos atualmente disponíveis são:
 
 - Entrada;
-- Saída.
+- Saida.
 
 A quantidade é armazenada no PostgreSQL como `numeric(18,3)`.
 
@@ -179,8 +294,6 @@ Os valores devem ser adaptados ao ambiente local.
 
 ## Entity Framework Core
 
-O projeto utiliza uma ferramenta local do .NET para execução do Entity Framework Core CLI.
-
 Restaurar as ferramentas:
 
     dotnet tool restore
@@ -190,19 +303,6 @@ Aplicar migrations:
     dotnet tool run dotnet-ef database update \
       --project src/ControleMateriais.Infrastructure/ControleMateriais.Infrastructure.csproj \
       --startup-project src/ControleMateriais.Api/ControleMateriais.Api.csproj
-
-## Status da API
-
-Endpoint:
-
-    GET /api/status
-
-Resposta:
-
-    {
-      "status": "online",
-      "aplicacao": "Controle de Materiais"
-    }
 
 ## Testes automatizados
 
@@ -214,40 +314,47 @@ Atualmente existem:
     1 teste de integração com PostgreSQL
     37 testes no total
 
-Os 36 testes unitários podem ser executados normalmente:
+Executar:
 
     cd backend
     dotnet test ControleMateriais.slnx
 
-O teste de integração utiliza um banco PostgreSQL separado e somente é executado quando a variável `TEST_CONNECTION_STRING` está configurada.
+Sem `TEST_CONNECTION_STRING`, o teste PostgreSQL é ignorado propositalmente.
 
-Exemplo:
+Para executar também o teste de integração:
 
     export TEST_CONNECTION_STRING="Host=SEU_HOST;Port=5432;Database=controle_materiais_testes;Username=SEU_USUARIO;Password=SUA_SENHA"
 
     dotnet test ControleMateriais.slnx
 
-Depois da execução:
+Depois:
 
     unset TEST_CONNECTION_STRING
 
-O teste de integração valida um fluxo real de persistência:
+O teste de integração utiliza transação e rollback para não manter os dados de teste gravados após sua execução.
 
-    criação de unidade
-        ↓
-    criação de material
-        ↓
-    entrada de estoque
-        ↓
-    saída de estoque
-        ↓
-    consulta das movimentações
-        ↓
-    cálculo do saldo
-        ↓
-    PostgreSQL
+## Validação manual da API
 
-O teste utiliza transação e rollback para não manter os dados de teste gravados após a execução.
+O fluxo principal já foi validado utilizando requisições HTTP reais contra PostgreSQL:
+
+    criar unidade
+        ↓
+    criar material
+        ↓
+    registrar entrada
+        ↓
+    consultar saldo
+        ↓
+    registrar saída
+        ↓
+    consultar novo saldo
+
+Também foram validados:
+
+- bloqueio de saída maior que o saldo;
+- resposta HTTP 400 para operação inválida;
+- resposta HTTP 404 para recurso inexistente;
+- tratamento global de exceções.
 
 ## Build
 
@@ -279,27 +386,25 @@ Concluído.
 
 Concluído.
 
+### Bloco 5 — API REST
+
+Concluído.
+
 Foram implementados:
 
-- Entity Framework Core;
-- Npgsql;
-- PostgreSQL;
-- DbContext;
-- mapeamento das entidades;
-- migration inicial;
-- chaves estrangeiras;
-- índices;
-- repositórios reais;
-- injeção de dependência;
-- configuração segura da connection string;
-- banco separado para testes;
-- teste de integração com PostgreSQL real.
+- controllers REST;
+- cadastro de unidades;
+- cadastro de materiais;
+- registro de entradas e saídas;
+- consulta de saldo;
+- enums em formato textual no JSON;
+- códigos HTTP adequados;
+- tratamento global de exceções;
+- validação do fluxo completo utilizando PostgreSQL real.
 
 ### Próxima etapa
 
-Bloco 5 — API REST.
-
-A próxima etapa irá expor os casos de uso já existentes através de endpoints HTTP.
+Bloco 6 — Consultas, histórico e relatórios.
 
 ## Autor
 
