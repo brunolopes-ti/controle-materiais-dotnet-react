@@ -30,4 +30,15 @@ public class UnidadesController : ControllerBase
             unidade
         );
     }
+
+    [HttpGet]
+    public async Task<
+        ActionResult<IReadOnlyCollection<UnidadeResponse>>>
+        Listar()
+    {
+        var unidades =
+            await _servicoUnidade.ListarAsync();
+
+        return Ok(unidades);
+    }
 }

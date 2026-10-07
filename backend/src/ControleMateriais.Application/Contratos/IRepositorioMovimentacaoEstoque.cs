@@ -17,4 +17,25 @@ public interface IRepositorioMovimentacaoEstoque
             Guid? unidadeId = null,
             Guid? materialId = null
         );
+
+    Task<(
+        IReadOnlyCollection<MovimentacaoEstoque> Itens,
+        int TotalItens
+    )>
+        ListarPaginadoAsync(
+            int pagina,
+            int tamanhoPagina,
+            Guid? unidadeId = null,
+            Guid? materialId = null
+        );
+
+    Task<(
+        int TotalMovimentacoes,
+        decimal TotalEntradas,
+        decimal TotalSaidas
+    )>
+        ObterResumoAsync(
+            Guid? unidadeId = null,
+            Guid? materialId = null
+        );
 }

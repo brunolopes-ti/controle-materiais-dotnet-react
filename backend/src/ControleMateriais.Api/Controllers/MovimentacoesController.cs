@@ -35,14 +35,17 @@ public class MovimentacoesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<
-        ActionResult<IReadOnlyCollection<HistoricoMovimentacaoResponse>>>
+    public async Task<ActionResult<HistoricoPaginadoResponse>>
         Listar(
-            [FromQuery] Guid? unidadeId,
-            [FromQuery] Guid? materialId)
+            [FromQuery] int pagina = 1,
+            [FromQuery] int tamanhoPagina = 20,
+            [FromQuery] Guid? unidadeId = null,
+            [FromQuery] Guid? materialId = null)
     {
         var historico =
-            await _servicoHistorico.ListarAsync(
+            await _servicoHistorico.ListarPaginadoAsync(
+                pagina,
+                tamanhoPagina,
                 unidadeId,
                 materialId
             );

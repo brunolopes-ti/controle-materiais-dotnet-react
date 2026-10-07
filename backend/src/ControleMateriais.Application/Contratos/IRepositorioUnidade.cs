@@ -6,5 +6,7 @@ public interface IRepositorioUnidade
 {
     Task<Unidade?> ObterPorIdAsync(Guid id);
 
+    Task<IReadOnlyCollection<Unidade>> ListarAsync();
+
     Task AdicionarAsync(Unidade unidade);
 }

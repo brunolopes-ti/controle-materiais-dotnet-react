@@ -19,13 +19,33 @@ public class ServicoMaterial
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var material = new Material(
-            request.Nome,
-            request.UnidadeMedida
+        var material =
+            new Material(
+                request.Nome,
+                request.UnidadeMedida
+            );
+
+        await _repositorioMaterial.AdicionarAsync(
+            material
         );
 
-        await _repositorioMaterial.AdicionarAsync(material);
+        return Mapear(material);
+    }
 
+    public async Task<IReadOnlyCollection<MaterialResponse>>
+        ListarAsync()
+    {
+        var materiais =
+            await _repositorioMaterial.ListarAsync();
+
+        return materiais
+            .Select(Mapear)
+            .ToList();
+    }
+
+    private static MaterialResponse Mapear(
+        Material material)
+    {
         return new MaterialResponse
         {
             Id = material.Id,

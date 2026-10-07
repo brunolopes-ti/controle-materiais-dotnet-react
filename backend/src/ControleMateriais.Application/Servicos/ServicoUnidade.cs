@@ -19,10 +19,30 @@ public class ServicoUnidade
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var unidade = new Unidade(request.Nome);
+        var unidade =
+            new Unidade(request.Nome);
 
-        await _repositorioUnidade.AdicionarAsync(unidade);
+        await _repositorioUnidade.AdicionarAsync(
+            unidade
+        );
 
+        return Mapear(unidade);
+    }
+
+    public async Task<IReadOnlyCollection<UnidadeResponse>>
+        ListarAsync()
+    {
+        var unidades =
+            await _repositorioUnidade.ListarAsync();
+
+        return unidades
+            .Select(Mapear)
+            .ToList();
+    }
+
+    private static UnidadeResponse Mapear(
+        Unidade unidade)
+    {
         return new UnidadeResponse
         {
             Id = unidade.Id,

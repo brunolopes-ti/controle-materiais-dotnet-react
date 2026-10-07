@@ -30,4 +30,15 @@ public class MateriaisController : ControllerBase
             material
         );
     }
+
+    [HttpGet]
+    public async Task<
+        ActionResult<IReadOnlyCollection<MaterialResponse>>>
+        Listar()
+    {
+        var materiais =
+            await _servicoMaterial.ListarAsync();
+
+        return Ok(materiais);
+    }
 }
