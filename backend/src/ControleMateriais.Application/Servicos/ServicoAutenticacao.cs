@@ -1,5 +1,6 @@
 using ControleMateriais.Application.Contratos;
 using ControleMateriais.Application.DTOs;
+using ControleMateriais.Domain.Excecoes;
 
 namespace ControleMateriais.Application.Servicos;
 
@@ -29,7 +30,7 @@ public class ServicoAutenticacao
             string.IsNullOrWhiteSpace(request.Senha)
         )
         {
-            throw new UnauthorizedAccessException(
+            throw new NaoAutorizadoException(
                 "E-mail ou senha inválidos."
             );
         }
@@ -41,14 +42,14 @@ public class ServicoAutenticacao
 
         if (usuario is null)
         {
-            throw new UnauthorizedAccessException(
+            throw new NaoAutorizadoException(
                 "E-mail ou senha inválidos."
             );
         }
 
         if (!usuario.Ativo)
         {
-            throw new UnauthorizedAccessException(
+            throw new NaoAutorizadoException(
                 "E-mail ou senha inválidos."
             );
         }
@@ -61,7 +62,7 @@ public class ServicoAutenticacao
 
         if (!senhaValida)
         {
-            throw new UnauthorizedAccessException(
+            throw new NaoAutorizadoException(
                 "E-mail ou senha inválidos."
             );
         }

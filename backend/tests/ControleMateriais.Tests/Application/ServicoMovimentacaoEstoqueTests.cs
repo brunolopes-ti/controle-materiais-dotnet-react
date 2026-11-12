@@ -2,6 +2,7 @@ using ControleMateriais.Application.DTOs;
 using ControleMateriais.Application.Servicos;
 using ControleMateriais.Domain.Entidades;
 using ControleMateriais.Domain.Enums;
+using ControleMateriais.Domain.Excecoes;
 
 namespace ControleMateriais.Tests.Application;
 
@@ -32,7 +33,8 @@ public class ServicoMovimentacaoEstoqueTests
         var servico = new ServicoMovimentacaoEstoque(
             repositorioUnidade,
             repositorioMaterial,
-            repositorioMovimentacao
+            repositorioMovimentacao,
+            new BloqueioEstoqueFake()
         );
 
         var request = new RegistrarMovimentacaoRequest
@@ -86,7 +88,8 @@ public class ServicoMovimentacaoEstoqueTests
         var servico = new ServicoMovimentacaoEstoque(
             repositorioUnidade,
             repositorioMaterial,
-            repositorioMovimentacao
+            repositorioMovimentacao,
+            new BloqueioEstoqueFake()
         );
 
         var request = new RegistrarMovimentacaoRequest
@@ -130,7 +133,8 @@ public class ServicoMovimentacaoEstoqueTests
         var servico = new ServicoMovimentacaoEstoque(
             repositorioUnidade,
             repositorioMaterial,
-            repositorioMovimentacao
+            repositorioMovimentacao,
+            new BloqueioEstoqueFake()
         );
 
         var request = new RegistrarMovimentacaoRequest
@@ -141,7 +145,7 @@ public class ServicoMovimentacaoEstoqueTests
             Quantidade = 5
         };
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<RegraNegocioException>(
             () => servico.RegistrarAsync(request)
         );
     }
@@ -168,7 +172,8 @@ public class ServicoMovimentacaoEstoqueTests
         var servico = new ServicoMovimentacaoEstoque(
             repositorioUnidade,
             repositorioMaterial,
-            repositorioMovimentacao
+            repositorioMovimentacao,
+            new BloqueioEstoqueFake()
         );
 
         var request = new RegistrarMovimentacaoRequest
@@ -180,7 +185,7 @@ public class ServicoMovimentacaoEstoqueTests
         };
 
         var excecao =
-            await Assert.ThrowsAsync<KeyNotFoundException>(
+            await Assert.ThrowsAsync<RecursoNaoEncontradoException>(
                 () => servico.RegistrarAsync(request)
             );
 
@@ -209,7 +214,8 @@ public class ServicoMovimentacaoEstoqueTests
         var servico = new ServicoMovimentacaoEstoque(
             repositorioUnidade,
             repositorioMaterial,
-            repositorioMovimentacao
+            repositorioMovimentacao,
+            new BloqueioEstoqueFake()
         );
 
         var request = new RegistrarMovimentacaoRequest
@@ -221,7 +227,7 @@ public class ServicoMovimentacaoEstoqueTests
         };
 
         var excecao =
-            await Assert.ThrowsAsync<KeyNotFoundException>(
+            await Assert.ThrowsAsync<RecursoNaoEncontradoException>(
                 () => servico.RegistrarAsync(request)
             );
 

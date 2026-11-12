@@ -1,5 +1,6 @@
 using ControleMateriais.Application.DTOs;
 using ControleMateriais.Application.Servicos;
+using ControleMateriais.Domain.Excecoes;
 
 namespace ControleMateriais.Tests.Application;
 
@@ -29,7 +30,7 @@ public class ServicoUsuarioTests
             };
 
         var resultado =
-            await servico.CriarAsync(request);
+            await servico.CriarAsync(request, solicitanteAutenticado: false);
 
         var usuarioSalvo =
             await repositorio.ObterPorEmailAsync(
@@ -80,18 +81,20 @@ public class ServicoUsuarioTests
                 Nome = "Bruno",
                 Email = "bruno@exemplo.com",
                 Senha = "MinhaSenha123!"
-            }
+            },
+            solicitanteAutenticado: false
         );
 
         var excecao =
-            await Assert.ThrowsAsync<InvalidOperationException>(
+            await Assert.ThrowsAsync<ConflitoException>(
                 () => servico.CriarAsync(
                     new CriarUsuarioRequest
                     {
                         Nome = "Outro Bruno",
                         Email = "BRUNO@EXEMPLO.COM",
                         Senha = "OutraSenha123!"
-                    }
+                    },
+                    solicitanteAutenticado: true
                 )
             );
 
@@ -126,7 +129,7 @@ public class ServicoUsuarioTests
 
         var excecao =
             await Assert.ThrowsAsync<ArgumentException>(
-                () => servico.CriarAsync(request)
+                () => servico.CriarAsync(request, solicitanteAutenticado: false)
             );
 
         Assert.Contains(

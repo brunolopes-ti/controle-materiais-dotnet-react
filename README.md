@@ -177,11 +177,17 @@ Resposta:
 
 ### Criar usuário
 
-Endpoint público:
-
 ```http
 POST /api/usuarios
 ```
+
+Regra de acesso:
+
+- sem token, só é possível criar o **primeiro** usuário do sistema;
+- depois que existir pelo menos um usuário, o cadastro exige um JWT válido
+  (`Authorization: Bearer TOKEN`);
+- cadastro anônimo com usuários já existentes retorna `401 Unauthorized`;
+- e-mail já cadastrado retorna `409 Conflict`.
 
 Exemplo:
 
@@ -590,10 +596,27 @@ A API utiliza os seguintes códigos principais:
 400 Bad Request
 401 Unauthorized
 404 Not Found
+409 Conflict
 500 Internal Server Error
 ```
 
-Erros conhecidos de negócio são tratados globalmente pela API.
+Erros conhecidos de negócio são tratados globalmente pela API
+(`ApiExceptionHandler`), a partir de exceções próprias do projeto
+em `ControleMateriais.Domain/Excecoes`:
+
+| Exceção | Status |
+|---|---|
+| `RegraNegocioException` | 400 |
+| `ArgumentException` (validação das entidades) | 400 |
+| `NaoAutorizadoException` | 401 |
+| `RecursoNaoEncontradoException` | 404 |
+| `ConflitoException` | 409 |
+| Qualquer outra exceção | 500, com mensagem genérica |
+
+Exceções genéricas do .NET, como `InvalidOperationException` e
+`KeyNotFoundException`, também são lançadas por bibliotecas (EF Core,
+Npgsql). Por isso elas não são tratadas como erro do cliente: retornam
+500 sem expor a mensagem original, que fica registrada no log.
 
 Exemplo de tentativa de saída maior que o saldo:
 
@@ -684,6 +707,20 @@ Os tipos atualmente disponíveis são:
 A quantidade é armazenada no PostgreSQL como `numeric(18,3)`.
 
 Também existem relacionamentos entre movimentações, unidades e materiais, além de índice para consultas por unidade e material.
+
+### Concorrência no registro de movimentações
+
+O saldo não é uma coluna: ele é calculado a partir das movimentações.
+Para registrar uma saída, a API lê o saldo, valida e grava.
+
+Sem proteção, duas saídas simultâneas poderiam ler o mesmo saldo,
+passar ambas pela validação e deixar o estoque negativo.
+
+Para evitar isso, o registro acontece dentro de uma transação que
+trava a linha do material (`SELECT ... FOR UPDATE`) antes de ler o
+saldo. Uma segunda movimentação do mesmo material espera a primeira
+terminar e então lê o saldo já atualizado. Ver `IBloqueioEstoque`
+(Application) e `BloqueioEstoque` (Infrastructure).
 
 ## Regras de negócio implementadas
 
@@ -844,11 +881,15 @@ O projeto utiliza xUnit.
 Situação atual:
 
 ```text
-59 testes executados com sucesso
-1 teste de integração com PostgreSQL ignorado quando não configurado
-60 testes no total
+68 testes executados com sucesso
+3 testes de integração com PostgreSQL ignorados quando não configurados
+71 testes no total
 0 testes com falha
 ```
+
+O GitHub Actions (`.github/workflows/ci.yml`) compila o backend, aplica
+as migrations em um PostgreSQL 18 descartável e executa todos os
+testes, inclusive os de integração, a cada push e pull request.
 
 Executar:
 
@@ -873,7 +914,9 @@ Depois:
 unset TEST_CONNECTION_STRING
 ```
 
-O teste de integração utiliza transação e rollback para não manter os dados de teste gravados após sua execução.
+O teste de persistência utiliza transação e rollback para não manter os dados de teste gravados após sua execução.
+
+Os testes de concorrência (`ConcorrenciaPostgreSqlTests`) precisam de várias conexões ao mesmo tempo; por isso gravam dados reais e os removem ao final de cada teste.
 
 Os testes automatizados incluem cenários de:
 
@@ -905,7 +948,12 @@ Os testes automatizados incluem cenários de:
 - validação de página inválida;
 - validação do limite máximo de itens por página;
 - listagem de unidades em ordem alfabética;
-- listagem de materiais em ordem alfabética.
+- listagem de materiais em ordem alfabética;
+- bloqueio, confirmação e liberação da operação de estoque;
+- saídas simultâneas sem estoque negativo (PostgreSQL real);
+- cadastro anônimo permitido só para o primeiro usuário;
+- e-mail duplicado em cadastros simultâneos retornando conflito (PostgreSQL real);
+- mapeamento de exceções para status HTTP sem expor exceções genéricas.
 
 ## Validação manual da API
 
@@ -1074,6 +1122,16 @@ Foram realizados:
 - novos testes automatizados;
 - validações manuais contra PostgreSQL real;
 - revisão da documentação.
+
+### Correções pós-auditoria
+
+Foram corrigidos:
+
+- condição de corrida que permitia estoque negativo em saídas simultâneas;
+- cadastro de usuários aberto a qualquer pessoa sem autenticação;
+- exceções genéricas do .NET sendo tratadas como erro do cliente (400) e expondo mensagens internas;
+- e-mail duplicado em cadastros simultâneos retornando 500 em vez de 409;
+- ausência de integração contínua (CI) no repositório.
 
 ### Estado atual
 

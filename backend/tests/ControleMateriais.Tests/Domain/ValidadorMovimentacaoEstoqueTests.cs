@@ -1,3 +1,4 @@
+using ControleMateriais.Domain.Excecoes;
 using ControleMateriais.Domain.Entidades;
 using ControleMateriais.Domain.Enums;
 using ControleMateriais.Domain.Servicos;
@@ -63,7 +64,7 @@ public class ValidadorMovimentacaoEstoqueTests
             UnidadeMedida.Litro
         );
 
-        var excecao = Assert.Throws<InvalidOperationException>(
+        var excecao = Assert.Throws<RegraNegocioException>(
             () => ValidadorMovimentacaoEstoque.Validar(
                 unidade,
                 material,
@@ -91,7 +92,7 @@ public class ValidadorMovimentacaoEstoqueTests
 
         material.Desativar();
 
-        var excecao = Assert.Throws<InvalidOperationException>(
+        var excecao = Assert.Throws<RegraNegocioException>(
             () => ValidadorMovimentacaoEstoque.Validar(
                 unidade,
                 material,
@@ -117,7 +118,7 @@ public class ValidadorMovimentacaoEstoqueTests
             UnidadeMedida.Litro
         );
 
-        Assert.Throws<InvalidOperationException>(
+        Assert.Throws<RegraNegocioException>(
             () => ValidadorMovimentacaoEstoque.Validar(
                 unidade,
                 material,

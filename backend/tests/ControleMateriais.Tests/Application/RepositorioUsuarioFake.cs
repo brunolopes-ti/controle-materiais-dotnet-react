@@ -37,4 +37,9 @@ public class RepositorioUsuarioFake : IRepositorioUsuario
 
         return Task.FromResult(usuario);
     }
+
+    public Task<bool> ExisteAlgumAsync()
+    {
+        return Task.FromResult(_usuarios.Count > 0);
+    }
 }

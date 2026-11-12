@@ -59,6 +59,7 @@ builder.Services.AddScoped<
 
 builder.Services.AddScoped<IServicoHashSenha, ServicoHashSenha>();
 builder.Services.AddScoped<IGeradorToken, GeradorTokenJwt>();
+builder.Services.AddScoped<IBloqueioEstoque, BloqueioEstoque>();
 
 builder.Services.AddScoped<ServicoUnidade>();
 builder.Services.AddScoped<ServicoMaterial>();

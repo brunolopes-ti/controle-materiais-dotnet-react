@@ -48,7 +48,8 @@ public class PersistenciaPostgreSqlTests
                 new ServicoMovimentacaoEstoque(
                     repositorioUnidade,
                     repositorioMaterial,
-                    repositorioMovimentacao
+                    repositorioMovimentacao,
+                    new BloqueioEstoque(context)
                 );
 
             var servicoEstoque =

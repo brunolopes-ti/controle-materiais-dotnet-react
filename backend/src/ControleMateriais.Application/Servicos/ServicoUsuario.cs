@@ -1,6 +1,7 @@
 using ControleMateriais.Application.Contratos;
 using ControleMateriais.Application.DTOs;
 using ControleMateriais.Domain.Entidades;
+using ControleMateriais.Domain.Excecoes;
 
 namespace ControleMateriais.Application.Servicos;
 
@@ -17,10 +18,29 @@ public class ServicoUsuario
         _servicoHashSenha = servicoHashSenha;
     }
 
+    /// <summary>
+    /// Cria um usuário.
+    ///
+    /// Regra de acesso: sem autenticação, só é possível criar o
+    /// primeiro usuário do sistema (para não ficar impossível
+    /// começar a usar a API). A partir daí, só um usuário
+    /// autenticado pode cadastrar outros.
+    /// </summary>
     public async Task<UsuarioResponse> CriarAsync(
-        CriarUsuarioRequest request)
+        CriarUsuarioRequest request,
+        bool solicitanteAutenticado)
     {
         ArgumentNullException.ThrowIfNull(request);
+
+        if (
+            !solicitanteAutenticado &&
+            await _repositorioUsuario.ExisteAlgumAsync()
+        )
+        {
+            throw new NaoAutorizadoException(
+                "É necessário estar autenticado para cadastrar usuários."
+            );
+        }
 
         if (string.IsNullOrWhiteSpace(request.Senha))
         {
@@ -45,7 +65,7 @@ public class ServicoUsuario
 
         if (usuarioExistente is not null)
         {
-            throw new InvalidOperationException(
+            throw new ConflitoException(
                 "Já existe um usuário cadastrado com este e-mail."
             );
         }

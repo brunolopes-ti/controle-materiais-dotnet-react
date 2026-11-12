@@ -1,5 +1,6 @@
 using ControleMateriais.Domain.Entidades;
 using ControleMateriais.Domain.Enums;
+using ControleMateriais.Domain.Excecoes;
 
 namespace ControleMateriais.Domain.Servicos;
 
@@ -17,14 +18,14 @@ public static class ValidadorMovimentacaoEstoque
 
         if (!unidade.Ativa)
         {
-            throw new InvalidOperationException(
+            throw new RegraNegocioException(
                 "Não é possível movimentar estoque de uma unidade inativa."
             );
         }
 
         if (!material.Ativo)
         {
-            throw new InvalidOperationException(
+            throw new RegraNegocioException(
                 "Não é possível movimentar um material inativo."
             );
         }
@@ -50,7 +51,7 @@ public static class ValidadorMovimentacaoEstoque
             quantidade > saldoAtual
         )
         {
-            throw new InvalidOperationException(
+            throw new RegraNegocioException(
                 "Estoque insuficiente para realizar a saída."
             );
         }

@@ -1,3 +1,4 @@
+using ControleMateriais.Domain.Excecoes;
 using ControleMateriais.Application.Servicos;
 using ControleMateriais.Domain.Entidades;
 using ControleMateriais.Domain.Enums;
@@ -127,7 +128,7 @@ public class ServicoEstoqueTests
             repositorioMovimentacao
         );
 
-        await Assert.ThrowsAsync<KeyNotFoundException>(
+        await Assert.ThrowsAsync<RecursoNaoEncontradoException>(
             () => servico.ConsultarSaldoAsync(
                 Guid.NewGuid(),
                 material.Id
@@ -157,7 +158,7 @@ public class ServicoEstoqueTests
             repositorioMovimentacao
         );
 
-        await Assert.ThrowsAsync<KeyNotFoundException>(
+        await Assert.ThrowsAsync<RecursoNaoEncontradoException>(
             () => servico.ConsultarSaldoAsync(
                 unidade.Id,
                 Guid.NewGuid()

@@ -1,3 +1,4 @@
+using ControleMateriais.Domain.Excecoes;
 using ControleMateriais.Application.DTOs;
 using ControleMateriais.Application.Servicos;
 using ControleMateriais.Domain.Entidades;
@@ -97,7 +98,7 @@ public class ServicoAutenticacaoTests
             );
 
         var excecao =
-            await Assert.ThrowsAsync<UnauthorizedAccessException>(
+            await Assert.ThrowsAsync<NaoAutorizadoException>(
                 () => servico.AutenticarAsync(
                     new LoginRequest
                     {
@@ -133,7 +134,7 @@ public class ServicoAutenticacaoTests
             );
 
         var excecao =
-            await Assert.ThrowsAsync<UnauthorizedAccessException>(
+            await Assert.ThrowsAsync<NaoAutorizadoException>(
                 () => servico.AutenticarAsync(
                     new LoginRequest
                     {
@@ -182,7 +183,7 @@ public class ServicoAutenticacaoTests
             );
 
         var excecao =
-            await Assert.ThrowsAsync<UnauthorizedAccessException>(
+            await Assert.ThrowsAsync<NaoAutorizadoException>(
                 () => servico.AutenticarAsync(
                     new LoginRequest
                     {

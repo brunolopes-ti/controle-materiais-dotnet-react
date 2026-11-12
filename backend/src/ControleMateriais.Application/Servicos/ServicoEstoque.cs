@@ -1,5 +1,6 @@
 using ControleMateriais.Application.Contratos;
 using ControleMateriais.Application.DTOs;
+using ControleMateriais.Domain.Excecoes;
 using ControleMateriais.Domain.Servicos;
 
 namespace ControleMateriais.Application.Servicos;
@@ -29,7 +30,7 @@ public class ServicoEstoque
 
         if (unidade is null)
         {
-            throw new KeyNotFoundException(
+            throw new RecursoNaoEncontradoException(
                 "Unidade não encontrada."
             );
         }
@@ -39,7 +40,7 @@ public class ServicoEstoque
 
         if (material is null)
         {
-            throw new KeyNotFoundException(
+            throw new RecursoNaoEncontradoException(
                 "Material não encontrado."
             );
         }

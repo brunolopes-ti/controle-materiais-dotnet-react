@@ -1,0 +1,75 @@
+name: CI
+
+# Roda em qualquer push (inclusive branches de correção) e em pull
+# requests para a main, para que nenhuma mudança chegue à main sem
+# compilar e passar nos testes.
+on:
+  push:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: controle_materiais_testes
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d controle_materiais_testes"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    defaults:
+      run:
+        working-directory: backend
+
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
+      DOTNET_NOLOGO: 'true'
+      # Valores apenas para o banco descartável do CI. Não são segredos
+      # de nenhum ambiente real.
+      CONEXAO_CI: Host=localhost;Port=5432;Database=controle_materiais_testes;Username=postgres;Password=postgres
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restaurar dependências e ferramentas
+        run: |
+          dotnet restore ControleMateriais.slnx
+          dotnet tool restore
+
+      - name: Compilar
+        run: dotnet build ControleMateriais.slnx --no-restore --configuration Release
+
+      # O dotnet-ef inicia a API em modo design-time; por isso ela
+      # precisa da connection string e das configurações de JWT.
+      - name: Aplicar migrations no PostgreSQL de teste
+        env:
+          ConnectionStrings__ControleMateriais: ${{ env.CONEXAO_CI }}
+          Jwt__Key: chave-somente-para-o-ci-com-mais-de-32-bytes
+          Jwt__Issuer: ControleMateriais.Api
+          Jwt__Audience: ControleMateriais.Client
+          Jwt__ExpirationMinutes: '60'
+        run: |
+          dotnet tool run dotnet-ef database update \
+            --project src/ControleMateriais.Infrastructure/ControleMateriais.Infrastructure.csproj \
+            --startup-project src/ControleMateriais.Api/ControleMateriais.Api.csproj
+
+      - name: Executar testes (unitários e integração com PostgreSQL)
+        env:
+          TEST_CONNECTION_STRING: ${{ env.CONEXAO_CI }}
+        run: dotnet test ControleMateriais.slnx --no-build --configuration Release --verbosity normal
